@@ -1,0 +1,198 @@
+(footprint "CE-12-2"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "ADPD144RI Footprint (CE-12-2)")
+	(tags "PPG Sensor")
+	(property "Reference" "REF**"
+		(at 0 -3.7 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "8fe40a7a-ff26-480c-8cfe-33b96ecf309f")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "CE-12-2"
+		(at 0.2 -0.8 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "9fea2d40-c4d2-4336-99be-e6e0ad21629f")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/data-sheets/ADPD144RI.pdf"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "7f679611-3eae-405b-9982-eade19353820")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "fcb1a1d1-e375-4290-b3c0-5eda655590c5")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -1.4 2.8)
+		(end 1.4 2.8)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "f938d663-18b0-474f-b5b2-c2816f02fb09")
+	)
+	(fp_line
+		(start 1.7 -2.1)
+		(end 1.7 -0.5)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "23fa5ce1-b064-40fa-9c1f-eea4638cd12f")
+	)
+	(fp_poly
+		(pts
+			(xy -1.9 -1.7) (xy -2.09799 -1.50201) (xy -2.09799 -1.89799) (xy -1.9 -1.7)
+		)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.SilkS")
+		(uuid "d922c6af-32b9-4a42-aa67-e9ec597b25f7")
+	)
+	(fp_rect
+		(start -1.55 -2.55)
+		(end 1.55 2.55)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "afd3409b-eb1a-485c-b0a2-bb9206072b06")
+	)
+	(fp_rect
+		(start -1.45 -2.55)
+		(end 1.45 2.55)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "ec96e69d-87f4-4124-ab28-712598531659")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0.2 0.7 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "b8ef1f02-5c0e-42f5-84c2-a28a6343f834")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at -1 -1.75)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "795e2fe6-b7a0-42bd-b769-5e50b5acb23e")
+	)
+	(pad "2" smd rect
+		(at -1 -1.05)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "5e3e4b34-3a6c-4935-96ff-11561e88013b")
+	)
+	(pad "3" smd rect
+		(at -1 -0.35)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "84fd43eb-1126-402c-b182-64b04ba6a230")
+	)
+	(pad "4" smd rect
+		(at -1 0.35)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "c89f9cc9-ca3e-4258-8490-1b96d3db2f7d")
+	)
+	(pad "5" smd rect
+		(at -1 1.05)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "31ec2161-703c-46a2-80cf-5ad17d23e71a")
+	)
+	(pad "6" smd rect
+		(at -1 1.75)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "7776e3b5-d1cc-43e4-994e-a351a3d737fb")
+	)
+	(pad "7" smd rect
+		(at 1 1.75)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "35b157eb-064a-42eb-bfeb-6642dfb62788")
+	)
+	(pad "8" smd rect
+		(at 1 1.05)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "07e10ece-c7ba-4b85-83a5-37bb1a509fd2")
+	)
+	(pad "9" smd rect
+		(at 1 0.35)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "d966dd52-be5f-4dd9-a021-70f6256252ec")
+	)
+	(pad "10" smd rect
+		(at 1 -0.35)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "12dce037-608f-4b40-9d74-c90ebe2caff2")
+	)
+	(pad "11" smd rect
+		(at 1 -1.05)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "7267e75f-3a90-498e-80a1-6504a94bf524")
+	)
+	(pad "12" smd rect
+		(at 1 -1.75)
+		(size 0.905 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "07fed047-34d8-4f6c-b00d-cac5950705aa")
+	)
+	(embedded_fonts no)
+)

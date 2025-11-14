@@ -22,7 +22,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CUSTOM:CE-12-2"
 			(at 0 0 0)
 			(effects
 				(font
