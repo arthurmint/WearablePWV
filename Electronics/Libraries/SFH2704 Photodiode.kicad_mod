@@ -1,0 +1,136 @@
+(footprint "SFH2704 Photodiode"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -2.4 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "f53953ad-cb59-4489-87ed-78c67cdd809d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "SFH2704"
+		(at 0 2.1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "ad365e12-c22e-44c8-aed6-e09b9fb5854a")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" "https://www.farnell.com/datasheets/4327633.pdf"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "367c9065-e621-42c8-b299-32d2ca2377a9")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "5ff52f11-e025-4d6e-85a5-cce1dcdb0cfc")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -0.95 -1.05)
+		(end 0.95 -1.05)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "a4c0d659-1d70-45a8-83fd-83cc26e75856")
+	)
+	(fp_rect
+		(start -0.9 -0.85)
+		(end -0.25 -0.55)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "F.Paste")
+		(uuid "daa4e300-76a9-489b-896d-782d6bd35dee")
+	)
+	(fp_rect
+		(start 0.25 -0.85)
+		(end 0.9 -0.55)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "F.Paste")
+		(uuid "f777b0e4-ff0d-4017-aa55-69b9de0a421e")
+	)
+	(fp_rect
+		(start -1 -0.95)
+		(end 1 0.95)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "1baace92-7c6f-4fb2-98de-2a3fd58b8bd4")
+	)
+	(fp_rect
+		(start -0.95 -0.9)
+		(end 0.95 0.9)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "39bf5fa4-dc58-4a38-acea-ffe4cfcea906")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 3.6 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "79450741-e6aa-41d3-97ee-be91c4cc7028")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at 0 -0.7)
+		(size 1.9 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "b564096f-e7a4-43f4-8fde-2aca783af08c")
+	)
+	(pad "2" smd rect
+		(at 0 0.7)
+		(size 1.9 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "f0da9aaa-efef-4c06-bb71-ef611f7167f5")
+	)
+	(embedded_fonts no)
+)
