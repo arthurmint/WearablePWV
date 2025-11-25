@@ -1,0 +1,207 @@
+(footprint "SFH-7016 Multi Chip LED"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at -0.05 -1.75 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "9159b4d1-ad0c-494f-a1db-6209ebad7028")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "SFH-7016 Multi Chip LED"
+		(at 0 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "f0287f64-e02e-4bed-9ec9-1f691f686a88")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "94fe95a5-0ec2-49aa-883e-5db17b3168a9")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "1fe28780-fc74-4097-bb64-845f221d702b")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start 1.22 -1.33)
+		(end 1.22 -1.11)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "a16efec2-ddf4-4116-b2d6-74a72393461c")
+	)
+	(fp_line
+		(start 1.22 -1.11)
+		(end 1.44 -1.11)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "f27c0f3c-c5af-4aaf-abda-9fa75fed8468")
+	)
+	(fp_line
+		(start 1.27 -1.21)
+		(end 1.32 -1.16)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "0dd00a82-c369-4282-bf9d-c1e6c8f8a279")
+	)
+	(fp_line
+		(start 1.44 -1.11)
+		(end 1.22 -1.33)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "ce7684ca-296b-4167-8bf5-0ff035564a99")
+	)
+	(fp_rect
+		(start -1.1 -1)
+		(end 1.1 1)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "651261f8-32fe-4d13-8d38-44d4188bab3c")
+	)
+	(fp_rect
+		(start -0.6 -0.23)
+		(end -0.17 0.23)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "369a2eea-fab4-4191-9797-c2ac69c8a230")
+	)
+	(fp_rect
+		(start 0.165 -0.295)
+		(end 0.38 -0.065)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "c0a6e2a5-58a8-4cd8-be05-8a5ed43bea83")
+	)
+	(fp_rect
+		(start 0.165 0.065)
+		(end 0.38 0.295)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "20858d75-6098-4205-8c7a-e3e0a07a12ce")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 2.5 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "d30e84dd-8aa7-4d03-85ad-22d0dcf829bb")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at 0.65 -0.575)
+		(size 0.4 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "e6f3d0b1-5914-406b-93a4-eadecccc1cf8")
+	)
+	(pad "2" smd rect
+		(at 0.65 0.575)
+		(size 0.4 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "912e2dea-f721-473b-8f2f-5967f58e68c9")
+	)
+	(pad "3" smd rect
+		(at 0 -0.575)
+		(size 0.4 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "c297504f-a537-4f63-8bde-b3099877f241")
+	)
+	(pad "4" smd rect
+		(at 0 0.575)
+		(size 0.4 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "f51aaf29-fab6-436f-80ac-980d9b1c6903")
+	)
+	(pad "5" smd rect
+		(at -0.65 -0.575)
+		(size 0.4 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "bd41b7e2-b581-441c-b14d-92b39523a119")
+	)
+	(pad "5" smd rect
+		(at 0.65 -0.575)
+		(size 0.4 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "a75e16f9-564e-41e4-bd04-9762bcd2cbd7")
+	)
+	(pad "6" smd rect
+		(at -0.65 0.575)
+		(size 0.4 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "418e95d5-a2f5-47bd-972a-a83d3f75bbc5")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/../Libraries/STEP/SFH_7016_20230526_geometry.STEP"
+		(offset
+			(xyz 0 0 0.5)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -0 -0 -0)
+		)
+	)
+)

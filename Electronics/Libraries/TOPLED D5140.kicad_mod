@@ -1,0 +1,205 @@
+(footprint "TOPLED D5140"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -2.95 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "7aaeca9d-bc0b-4ae8-af2c-be087e8716e7")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "OSRAM TOPLED D5140"
+		(at 0 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "54c4aacc-b2dc-4e69-8cea-d4ac38163d11")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" "https://look.ams-osram.com/m/e56c3e3de773da1/original/SFH-2200.pdf"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "80b6b050-024f-46b9-8a9e-40ce93550c2f")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" "OSRAM TOPLED D5140"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "ab3847ea-7cd1-42ca-944f-5969dd12aafd")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -3.4 -2)
+		(end -3.4 2)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "c83fa1d9-05ea-49ce-8b00-40aa99a98d74")
+	)
+	(fp_line
+		(start -0.85 0)
+		(end -0.35 0)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "14d510e5-2fcb-4626-94d5-806d3d28a618")
+	)
+	(fp_line
+		(start -0.35 -0.7)
+		(end -0.35 0.7)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "9dfd1f3d-ae1b-4b0c-8bd1-3510e75c7fd4")
+	)
+	(fp_line
+		(start -0.35 0)
+		(end 0.35 -0.7)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "8f4445ef-d2a1-4cbd-bbba-c80004bede4f")
+	)
+	(fp_line
+		(start -0.35 0)
+		(end 0.35 0.7)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "939d0f9c-c494-4167-ade6-c1be9293b1c4")
+	)
+	(fp_line
+		(start 0.35 0)
+		(end 0.8 0)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "123b12d6-9336-4c0a-a1c2-8459912c7537")
+	)
+	(fp_line
+		(start 0.35 0.7)
+		(end 0.35 -0.7)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "a09345e7-660b-4f00-af37-bdf82d53a4db")
+	)
+	(fp_rect
+		(start -3 -2)
+		(end 3 2)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "c10c0629-a022-412b-9bd9-f8349e7b5975")
+	)
+	(fp_rect
+		(start -3 -2)
+		(end 3 2)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "6dce2d86-f5ed-4bb1-883a-12ab5e2aee79")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 2.5 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "8f10052b-a2a5-4e55-a3c1-f0d9a80e0d12")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at -2.45 0 180)
+		(size 0.43 3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "548254a8-ca12-4da1-996c-9c41d0a8f7fc")
+	)
+	(pad "1" smd rect
+		(at -2.05 0 180)
+		(size 0.37 3.4)
+		(layers "F.Cu" "F.Mask" "F.Paste" "Dwgs.User")
+		(uuid "98880e79-6248-460a-a43f-b32ea7bf55d9")
+	)
+	(pad "2" smd rect
+		(at 2.05 0)
+		(size 0.37 3.4)
+		(layers "F.Cu" "F.Mask" "F.Paste" "Dwgs.User")
+		(uuid "a7a0c90c-161f-4cc1-8ca0-6016ab449f2d")
+	)
+	(pad "2" smd rect
+		(at 2.45 0)
+		(size 0.43 3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "e9e64f95-56c0-47ff-860b-730f4b0e3602")
+	)
+	(group ""
+		(uuid "02ca1a08-74ad-4f65-ac33-c4cb57cf5470")
+		(members "a7a0c90c-161f-4cc1-8ca0-6016ab449f2d" "e9e64f95-56c0-47ff-860b-730f4b0e3602")
+	)
+	(group ""
+		(uuid "75cbad97-92ee-455f-afcd-c509c94029d9")
+		(members "548254a8-ca12-4da1-996c-9c41d0a8f7fc" "98880e79-6248-460a-a43f-b32ea7bf55d9")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/../Libraries/STEP/SFH_2200_20170928_geometry.STEP"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -0 -0 -90)
+		)
+	)
+)
