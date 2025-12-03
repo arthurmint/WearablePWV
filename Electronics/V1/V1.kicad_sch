@@ -8400,7 +8400,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "3V3 LED"
+		(property "Value" "CTRL LED"
 			(at 181.61 155.2574 90)
 			(effects
 				(font
