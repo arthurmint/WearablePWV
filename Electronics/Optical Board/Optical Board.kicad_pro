@@ -188,7 +188,7 @@
       ],
       "track_widths": [
         0.0,
-        0.16,
+        0.1,
         0.2,
         0.3,
         0.4,
@@ -471,7 +471,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "V1.kicad_pro",
+    "filename": "Optical Board.kicad_pro",
     "version": 3
   },
   "net_settings": {

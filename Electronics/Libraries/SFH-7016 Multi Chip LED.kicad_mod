@@ -180,12 +180,6 @@
 		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "bd41b7e2-b581-441c-b14d-92b39523a119")
 	)
-	(pad "5" smd rect
-		(at 0.65 -0.575)
-		(size 0.4 0.4)
-		(layers "F.Cu" "F.Mask" "F.Paste")
-		(uuid "a75e16f9-564e-41e4-bd04-9762bcd2cbd7")
-	)
 	(pad "6" smd rect
 		(at -0.65 0.575)
 		(size 0.4 0.4)
