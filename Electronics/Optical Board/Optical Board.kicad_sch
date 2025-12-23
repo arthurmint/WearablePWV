@@ -2709,32 +2709,30 @@
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x09")
 		(at 227.33 185.42 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "b57ae885-d775-44f8-9778-a993def32b43")
 		(property "Reference" "J2"
-			(at 229.87 184.1499 0)
+			(at 227.33 168.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Value" "OPTICAL"
-			(at 229.87 186.6899 0)
+			(at 227.33 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_EH_S9B-EH_1x09_P2.50mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_PH_S9B-PH-SM4-TB_1x09-1MP_P2.00mm_Horizontal"
 			(at 227.33 185.42 0)
 			(effects
 				(font
@@ -2798,7 +2796,7 @@
 			(uuid "58980c1a-ca41-4364-b817-0913f4df82a2")
 		)
 		(instances
-			(project "V1"
+			(project "Optical Board"
 				(path "/6465b793-86b5-4750-83bc-367c462e0283"
 					(reference "J2")
 					(unit 1)

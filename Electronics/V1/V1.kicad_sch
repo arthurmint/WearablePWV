@@ -13419,7 +13419,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_CSP:LFCSP-28-1EP_5x5mm_P0.5mm_EP3.14x3.14mm"
+		(property "Footprint" "CUSTOM:ADPD1080"
 			(at 228.6 226.06 0)
 			(effects
 				(font
@@ -14238,32 +14238,30 @@
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x09")
 		(at 360.68 175.26 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "b57ae885-d775-44f8-9778-a993def32b43")
 		(property "Reference" "J2"
-			(at 363.22 173.9899 0)
+			(at 360.68 158.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Value" "OPTICAL"
-			(at 363.22 176.5299 0)
+			(at 360.68 161.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_EH_S9B-EH_1x09_P2.50mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_PH_S9B-PH-SM4-TB_1x09-1MP_P2.00mm_Horizontal"
 			(at 360.68 175.26 0)
 			(effects
 				(font
@@ -14709,7 +14707,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_EH_S2B-EH_1x02_P2.50mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
 			(at 38.862 98.552 0)
 			(effects
 				(font
