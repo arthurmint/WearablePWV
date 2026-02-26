@@ -1,14 +1,8 @@
 #include "Arduino.h"
 #include "Wire.h"
 
+#define DEBUG_OUTPUT
 // Datasheet for reference https://www.analog.com/media/en/technical-documentation/data-sheets/adpd1080-1081.pdf
-
-const uint8_t SDA_PIN = 6; // D4
-const uint8_t SCL_PIN = 7; // D5
-
-const uint8_t GPIO0 = 2; // D0
-const uint8_t GPIO1 = 3; // D1
-
 class ADPD1080 {
     private:
         // i2c 
@@ -28,26 +22,43 @@ class ADPD1080 {
         const uint8_t KEY_SEL = 0x0D; // can be used to select a key to enable address changes in speciifc devices
         const uint8_t FIFO_ACCESS = 0x60;
 
+        bool read_register(uint8_t addr, uint8_t *reg) {
 
-        read_register(uint8_t reg_addr, uint) 
+            Wire.beginTransmission(i2c_saddr + 0);
+            
+            Wire.write(addr);
+            Wire.write(i2c_saddr + 1);
 
-    public:
-        ADPD1080(int SDA, int SCL, int GPIO0, int GPIO1) {
-            Wire.setPins(SDA, SCL);
-
-            Wire.begin();
-
-            Wire.setClock(clock_speed);
-
-            #ifdef DEBUG_OUTPUT
-            printf("ADPD1080 Initialised\n");
-            #endif
-        };
-
-    
-
-        test() {
-            Wire.
+            reg[1] = Wire.read();
+            reg[0] = Wire.read();
+        
+            return (Wire.endTransmission() == 0) ? 0 : 0;
         }
 
+    public:
+        
+        void begin(int SDA, int SCL, int GPIO0, int GPIO1) {
+            uint8_t error;
+
+            Wire.begin(SDA, SCL, clock_speed);
+
+            Wire.beginTransmission(i2c_saddr);
+            error = Wire.endTransmission();
+
+            if (error == 0) Serial.println("ADPD1080 Initialised");
+        };
+
+        void test() {
+            uint8_t reg[2];
+
+            if (read_register(0x10, reg)) {
+                Serial.println("Error checking the register");
+            } else {
+                Serial.print("Register state: ");
+                Serial.print(reg[1], BIN);
+                Serial.print(" ");
+                Serial.println(reg[0], BIN);
+            }
+            return;
+        };
 };
