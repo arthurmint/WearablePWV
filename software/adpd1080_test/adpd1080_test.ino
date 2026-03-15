@@ -2,8 +2,32 @@
 
 #include "../include/pinout.h"
 #include "../include/adpd1080.h"
-#define TEST_FOR_I2C
+
 ADPD1080 AFE;
+
+/* Project specific functions -- define measurement procedure */
+
+bool startMeasurement() {
+  if (AFE.getMode() == AFE.STANDBY) {
+    if (!AFE.clk32k_en(1)) {
+      #ifdef DEBUG_OUTPUT
+      Serial.println("CLK ENABLED");
+      #endif
+      AFE.setMode(AFE.PROGRAM);
+      #ifdef DEBUG_OUTPUT
+      Serial.println("Set mode to PROGRAM");
+      #endif
+    }
+    return 0;
+  } else {
+    #ifdef DEBUG_OUTPUT
+    Serial.println("Unable to start measurement while the device is not in STANDBY mode");
+    #endif
+    return 1;
+  }
+}
+
+
 
 void setup() { 
   Serial.begin(115200);
@@ -13,12 +37,9 @@ void setup() {
   Serial.println("Initialised ADPD1080");
 }
 void loop() {
-  #ifndef TEST_FOR_I2C
-  Serial.println("Testing ADPD1080");
-  
-  AFE.begin(PIN_SDA, PIN_SCL, PIN_GPIO0, PIN_GPIO1);
+  startMeasurement();
+  Serial.println("Waiting...");
   delay(1000);
-  #endif
 
   #ifdef TEST_FOR_I2C
   byte error, address;
