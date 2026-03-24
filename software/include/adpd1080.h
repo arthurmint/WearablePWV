@@ -135,4 +135,17 @@ class ADPD1080 {
             }
             return reg[0];
         }
+
+        void setLED() {
+            uint16_t data;
+
+            data = 0xE & 0xF;
+            data += (0b000 << 4) & 0b1110000;
+            data += (0b00000 << 7) & 0b111110000000;
+            data += (0b1 << 12) & 0b1000000000000;
+            data += (0b1 << 13) & 0b10000000000000;
+            data += (0b00 << 14) & 0b1100000000000000;
+
+            write_register(ILED2_COARSE, data);
+        }
 };

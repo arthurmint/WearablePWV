@@ -19,12 +19,19 @@ bool startMeasurement() {
       #endif
     }
     return 0;
+  } else if (AFE.getMode() == AFE.PROGRAM) {
+    AFE.setLED();
+    AFE.setMode(AFE.OPERATION);
+    #ifdef DEBUG_OUTPUT
+    Serial.println("Set LED current");
+    #endif
   } else {
     #ifdef DEBUG_OUTPUT
     Serial.println("Unable to start measurement while the device is not in STANDBY mode");
     #endif
     return 1;
   }
+ 
 }
 
 
@@ -40,7 +47,9 @@ void loop() {
   startMeasurement();
   Serial.println("Waiting...");
   delay(1000);
-
+  if (AFE.getMode() == AFE.OPERATION) {
+    AFE.reset();
+  }
   #ifdef TEST_FOR_I2C
   byte error, address;
   int nDevices = 0;
