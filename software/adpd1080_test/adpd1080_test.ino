@@ -17,6 +17,10 @@ bool startMeasurement() {
       #ifdef DEBUG_OUTPUT
       Serial.println("Set mode to PROGRAM");
       #endif
+      AFE.configurePPG(false);
+      #ifdef DEBUG_OUTPUT
+      Serial.println("PPG Configuration Compeleted!");
+      #endif
     }
     return 0;
   } else if (AFE.getMode() == AFE.PROGRAM) {
@@ -42,14 +46,49 @@ void setup() {
   AFE.begin(PIN_SDA, PIN_SCL, PIN_GPIO0, PIN_GPIO1);
   delay(1000);
   Serial.println("Initialised ADPD1080");
+  delay(10000);
+  startMeasurement();
 }
 void loop() {
-  startMeasurement();
-  Serial.println("Waiting...");
-  delay(1000);
-  if (AFE.getMode() == AFE.OPERATION) {
-    AFE.reset();
+  uint32_t data;
+  uint16_t available_data;
+
+  available_data = ((AFE.getStatus() >> 8) & 0xFF);
+  Serial.print("Available data: ");
+  Serial.print(available_data);
+  if (available_data >= 4) {
+    AFE.readFIFO(&data, 4);
+    
+    Serial.print(" DATA: ");
+    Serial.println(data);
+  } else {
+    Serial.println("Not enough data to read");
   }
+
+  if (interrupt) {
+    AFE.readFIFO(&data, 4);
+    
+    Serial.print(" DATA: ");
+    Serial.println(data);
+    
+    interrupt = false;
+  }
+  delay(10);
+
+
+  /*
+  uint16_t pd1, pd2, pd3, pd4;
+  if (!AFE.readPPG(&pd1, &pd2, &pd3, &pd4)) {
+      Serial.print("PD1: "); Serial.print(pd1);
+      Serial.print(" PD2: "); Serial.print(pd2);
+      Serial.print(" PD3: "); Serial.print(pd3);
+      Serial.print(" PD4: "); Serial.println(pd4);
+  } else {
+      Serial.println("Read error");
+  }
+  delay(100); // ~100 Hz
+  */
+  
   #ifdef TEST_FOR_I2C
   byte error, address;
   int nDevices = 0;
