@@ -52,15 +52,26 @@ void setup() {
 void loop() {
   uint32_t data;
   uint16_t available_data;
+  uint16_t pd1, pd2, pd3, pd4;
 
   available_data = ((AFE.getStatus() >> 8) & 0xFF);
   Serial.print("Available data: ");
   Serial.print(available_data);
   if (available_data >= 4) {
     AFE.readFIFO(&data, 4);
-    
+
     Serial.print(" DATA: ");
-    Serial.println(data);
+    Serial.print(data);
+
+    if (!AFE.readPPG(&pd1, &pd2, &pd3, &pd4)) {
+        Serial.print(" PD1: "); Serial.print(pd1);
+        Serial.print(" PD2: "); Serial.print(pd2);
+        Serial.print(" PD3: "); Serial.print(pd3);
+        Serial.print(" PD4: "); Serial.println(pd4);
+    } else {
+        Serial.println("Read error");
+    }
+    
   } else {
     Serial.println("Not enough data to read");
   }
@@ -76,18 +87,9 @@ void loop() {
   delay(10);
 
 
-  /*
-  uint16_t pd1, pd2, pd3, pd4;
-  if (!AFE.readPPG(&pd1, &pd2, &pd3, &pd4)) {
-      Serial.print("PD1: "); Serial.print(pd1);
-      Serial.print(" PD2: "); Serial.print(pd2);
-      Serial.print(" PD3: "); Serial.print(pd3);
-      Serial.print(" PD4: "); Serial.println(pd4);
-  } else {
-      Serial.println("Read error");
-  }
-  delay(100); // ~100 Hz
-  */
+  
+  
+  
   
   #ifdef TEST_FOR_I2C
   byte error, address;

@@ -219,14 +219,35 @@ class ADPD1080 {
             PD1-4 -> [7:4] 0x5
             PD1-4 -> [11:8] 0x5 
             */
-            optical_select = 0x3;
+
+
+            enum led_select {
+                IR = 0x1,
+                RED = 0x2,
+                GREEN = 0X3
+            };
+
+            enum pd_select {
+                NC = 0,
+                CH1_3_4_CH2_1_2 = 1,
+                CH1_7_8_CH2_5_6 = 2,
+                CH1_1_TO_4 = 3,
+                CH_ALL_5_TO_8 = 4,
+                CH_ALL_1_TO_4 = 5,
+                CH1_3_4_CH2_5_6 = 6,
+                CH1_5_TO_8 = 7
+            };
+
+            optical_select = RED;
             optical_select += (0x5 << 4) & 0x00F0;
             optical_select += (0x5 << 8) & 0x0F00;
-            write_register(PD_LED_SELECT, optical_select);
+            write_register(PD_LED_SELECT, 0b010101010011);
 
             write_register(NUM_AVG, (num_averages << 4) & 0xF0);
 
             // LED pulse settings (Default values)
+  
+
             write_register(SLOTA_LED_PULSE, 0x0300);
             write_register(SLOTA_NUMPULSES, 0x0818); 
 
@@ -240,8 +261,15 @@ class ADPD1080 {
                 2: 50kΩ
                 3: 25kΩ
             */
-            write_register(SLOTA_TIA_CFG, ((7 << 10) & 0b1111110000000000) | ((3 << 4) & 0b110000) | ((2<<2) & 0b1100));
+            write_register(TIA_INDEP_GAIN, 0x0000);
 
+
+            /*
+                Must set bit 6 = 1
+                Must set bit 7 = 1 for TIA ADC mode
+            */
+
+            write_register(SLOTA_TIA_CFG, (0x07 << 10) | 0b0011111000);
             /* 
                 AFE connection in Time Slot A.
                 0xADA5: analog full path mode (TIA_BPF_INT_ADC).
@@ -250,7 +278,10 @@ class ADPD1080 {
                 0xB065: TIA ADC mode (if Register 0x42, Bit 7 = 0).
                 Others: reserved.
             */
-            write_register(SLOTA_AFE_CFG, 0xADA5);
+            write_register(SLOTA_AFE_CFG, 0xAE65);
+
+            // Write 1 to bit 7 to enable the integrator as a buffer.
+            write_register(MATH, 0b10000000);
 
             /*
                 To apply a reverse bias to the photodiode:
