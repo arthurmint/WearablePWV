@@ -1,8 +1,9 @@
 #include "Arduino.h"
 #include "Wire.h"
-#include "register_listings.h"
+#include "register_listings.h" // contains register listings from the ADPD1080 data sheet
 
-// Datasheet for reference https://www.analog.com/media/en/technical-documentation/data-sheets/adpd1080-1081.pdf
+// Datasheet for reference regarding measurement, register reading and addressing info
+// https://www.analog.com/media/en/technical-documentation/data-sheets/adpd1080-1081.pdf
 
 
 bool interrupt = false;
@@ -109,7 +110,13 @@ class ADPD1080 {
         };
 
 
-
+        /*
+        @brief Initialises the ADPD1080 with input pin numbers, attaches interrupt pins and tests I2C communication
+        @param SDA I2C SDA
+        @param SCL I2C SCL
+        @param GPIO0 Interrupt pin 
+        @param GPIO1 Additional interrupt pin
+        */
         void begin(int SDA, int SCL, int GPIO0, int GPIO1) {
             uint8_t error;
 
@@ -133,6 +140,10 @@ class ADPD1080 {
             #endif
         };
 
+        /*
+        @brief Handles the state of ADPD1080 as described in the datasheet
+        @param mode can be either STANDBY, PROGRAM or NORMAL
+        */
         void setMode(device_mode mode) {
             write_register(MODE, mode);
             #ifdef DEBUG_OUTPUT
@@ -150,6 +161,9 @@ class ADPD1080 {
             #endif
         }
 
+        /*
+        @brief Performs a software reset on the ADPD1080
+        */
         void reset() {
             if (write_register(SW_RESET, 0x1)) {
                 #ifdef DEBUG_OUTPUT
@@ -162,6 +176,10 @@ class ADPD1080 {
             }
         }
 
+        /*
+        @brief Configures the 32kHz clock to be the input value, returning 0 if successful
+        @param value Boolean enables/disables the clock
+        */
         bool clk32k_en(bool value) {
             uint8_t check[2];
             write_register(SAMPLE_CLK, (value << 7) & 0b10000000);
@@ -172,6 +190,9 @@ class ADPD1080 {
             } else return 1;
         }
 
+        /*
+        @brief Quickly returns the current mode of the device via register access
+        */
         uint8_t getMode() {
             uint8_t reg[2];
             bool error = 1;
@@ -182,12 +203,19 @@ class ADPD1080 {
             return reg[0];
         }
 
+        /*
+        @brief Reads the STATUS register (0x00), [15:8] corresponds to the number of available bytes of FIFO data to be read
+        */
         uint16_t getStatus() {
             uint8_t status[2];
             read_register(STATUS, status);
             return (uint16_t) (status[1] << 8) | status[0];
         }
 
+        // TODO make this dynamic -_-
+        /*
+        @brief Sets the LED Coarse current to a 16-bit value, hardcoded for now 
+        */
         void setLED() {
             uint16_t data;
 
@@ -201,6 +229,12 @@ class ADPD1080 {
             write_register(ILED2_COARSE, data);
         }
 
+
+        // TODO make this function more readable
+        /*
+        @brief Handles the initial configuration of the ADPD1080 in either interrupt mode or polling mode. Put this in setup()
+        @param interrupt_mode Determines how the FIFO will be read (on interrupt or via polling)
+        */
         void configurePPG(bool interrupt_mode) {
             uint8_t optical_select, rbias_select;
             uint8_t num_averages = 0b000; // 2^num_averages = number of averages
@@ -330,6 +364,11 @@ class ADPD1080 {
             setMode(OPERATION);
         }
 
+        /*
+        @brief Reads the 16-bit FIFO via multi-word read (as detailed by the datasheet)
+        @param *out points to the data's destination 
+        @param len the number of bytes to be read, must be at least 2
+        */
         void readFIFO(uint32_t *out, uint8_t len) {
             uint8_t reg[len], i=0;
             /*
@@ -348,7 +387,9 @@ class ADPD1080 {
 
         }
 
-
+        /*
+        @brief Reads the 16-bit value of each PD Channel 
+        */
         bool readPPG(uint16_t *pd1, uint16_t *pd2, uint16_t *pd3, uint16_t *pd4) {
             uint8_t reg[2];
 
