@@ -33,27 +33,29 @@ void setup() {
   } else {
     Serial.println("ESP-NOW receiver ready and listening...");
   }
+
 }
 
 void loop() {
-  // Housekeeping for WebSockets
   handleWebServer();
 
-  // If a new ESP-NOW message has arrived, broadcast it to all connected browsers
+  // Normal ESP-NOW messages → broadcast to browsers
   if (espNowHasNewMessage()) {
-    String msg = espNowGetLastMessage(true);   // clears the "new" flag
+    String msg    = espNowGetLastMessage(true);
     String sender = espNowGetLastSenderMac();
-
-    
-    String line = "ESP-NOW → [" + sender + "] " + msg;
-
-    // Send to all connected WebSocket clients
+    String line   = "MSG:[" + sender + "] " + msg;
     getWebSocket().textAll(line);
-
-    // Also print to Serial for debugging
-    Serial.println("✓ Broadcast to WebSocket: " + line);
+    Serial.println("✓ WS broadcast: " + line);
   }
 
-  // Small delay to avoid spinning too fast
+  // Latency reports → send as a distinct message type
+  if (espNowHasNewLatency()) {
+    float rtt = espNowGetLastLatency(true);
+    // Format: "LAT:<rtt_ms>" — the browser parses this separately
+    String line = "LAT:" + String(rtt, 1);
+    getWebSocket().textAll(line);
+    Serial.printf("✓ WS latency broadcast: %s ms RTT\n", String(rtt, 1).c_str());
+  }
+
   delay(5);
 }

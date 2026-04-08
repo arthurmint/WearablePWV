@@ -51,6 +51,7 @@ inline void initWiFiAP() {
   WiFi.mode(WIFI_AP_STA);
   delay(100);  // Small delay for mode to take effect
   
+  //esp_wifi_set_max_tx_power(84);
   // Start the AP with specific channel
   bool apStarted = WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, WIFI_CHANNEL);
 

@@ -11,4 +11,4 @@ static const char* WIFI_AP_PASSWORD = "esp32password";
 
 // (Optional) Wi-Fi channel for the AP (1–13).
 // later want ESP-NOW on the same channel.
-static const uint8_t WIFI_CHANNEL = 6;
+static const uint8_t WIFI_CHANNEL = 1;
