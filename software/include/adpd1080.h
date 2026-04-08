@@ -6,6 +6,7 @@
 // https://www.analog.com/media/en/technical-documentation/data-sheets/adpd1080-1081.pdf
 
 
+
 bool interrupt = false;
 
 void ARDUINO_ISR_ATTR int_return() {
@@ -272,6 +273,8 @@ class ADPD1080 {
             PD1-4 -> [11:8] 0x5 
             */
 
+
+            // Refer to Table 16 of the datasheet
             enum pd_select {
                 NC = 0,
                 CH1_3_4_CH2_1_2 = 1,
@@ -283,7 +286,7 @@ class ADPD1080 {
                 CH1_5_TO_8 = 7
             };
             
-            optical_select = GREEN | ((CH_ALL_5_TO_8 << 4) & 0x00F0) | ((CH_ALL_5_TO_8 << 8) & 0x0F00);
+            optical_select = GREEN | ((CH_ALL_1_TO_4 << 4) & 0x00F0) | ((CH_ALL_1_TO_4 << 8) & 0x0F00);
 
             write_register(PD_LED_SELECT, optical_select);
 
