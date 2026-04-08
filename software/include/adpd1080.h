@@ -1,6 +1,5 @@
 #include "Arduino.h"
 #include "Wire.h"
-<<<<<<< HEAD
 #include "register_listings.h" // contains register listings from the ADPD1080 data sheet
 
 // Datasheet for reference regarding measurement, register reading and addressing info
@@ -13,11 +12,7 @@ bool interrupt = false;
 void ARDUINO_ISR_ATTR int_return() {
     interrupt = true;
 }
-=======
->>>>>>> ae3567ea8f2622f5b20c4fea0543ca2880344203
 
-#define DEBUG_OUTPUT
-// Datasheet for reference https://www.analog.com/media/en/technical-documentation/data-sheets/adpd1080-1081.pdf
 class ADPD1080 {
     private:
         // i2c 
@@ -25,33 +20,110 @@ class ADPD1080 {
         uint8_t i2c_waddr = 0xC8; // default write address
         uint8_t i2c_raddr = 0xC9; // default read address 
         const uint32_t clock_speed = 100E+3;
-    
 
-        // register addresses
-        const uint8_t MODE = 0x10; // read/write to update state stored in [1:0]
-        const uint8_t SLOTA_LED_OFFSET = 0x30;
-        const uint8_t SLOTB_LED_OFFSET = 0x35;
-        const uint8_t SLOTA_PERIOD = 0x31;
-        const uint8_t SLOTB_PERIOD = 0x36;
-        const uint8_t ADDR_CONFIG = 0x09; // used to reconfigure slave address
-        const uint8_t KEY_SEL = 0x0D; // can be used to select a key to enable address changes in speciifc devices
-        const uint8_t FIFO_ACCESS = 0x60;
+        // ints
+        uint8_t gpio0, gpio1;
 
         bool read_register(uint8_t addr, uint8_t *reg) {
+            uint8_t n_bytes;
 
-            Wire.beginTransmission(i2c_saddr + 0);
+            Wire.beginTransmission(i2c_saddr);
             
             Wire.write(addr);
-            Wire.write(i2c_saddr + 1);
+            
+            Wire.endTransmission();
 
-            reg[1] = Wire.read();
-            reg[0] = Wire.read();
-        
-            return (Wire.endTransmission() == 0) ? 0 : 0;
+            n_bytes = Wire.requestFrom(i2c_saddr, (uint8_t) 2);
+
+            if (n_bytes == 2) {
+                reg[1] = Wire.read();
+                reg[0] = Wire.read();
+
+                #ifdef DEBUG_OUTPUT
+                Serial.print("Read: ");
+                Serial.print(reg[1], BIN);
+                Serial.print(" ");
+                Serial.print(reg[0], BIN);
+                Serial.print(" at address ");
+                Serial.println(addr, HEX);
+                #endif
+                return false;
+            }
+            
+            return true;
         }
 
+        bool multiword_read(uint8_t addr, uint8_t *reg, uint8_t n_words) {
+            uint8_t n_bytes, i = 0;
+
+            Wire.beginTransmission(i2c_saddr);
+            
+            Wire.write(addr);
+            
+            Wire.endTransmission();
+
+            n_bytes = Wire.requestFrom(i2c_saddr, n_words);
+
+            if (n_bytes == n_words) {
+                for (i=0; i<n_bytes; i++) {
+                    reg[n_bytes - 1 - i] = Wire.read();
+                    #ifdef DEBUG_OUTPUT
+                    Serial.print("Read: ");
+                    Serial.print(reg[n_bytes - 1 - i], BIN);
+                    #endif
+                }
+                return false;
+            }
+            return true; 
+        }
+
+        bool write_register(uint8_t addr, uint16_t data) {
+            uint8_t b1, b2, error;
+            b1 = data >> 8;
+            b2 = data & 0b11111111;
+            Wire.beginTransmission(i2c_saddr);
+            
+            Wire.write(addr);
+            Wire.write(b1);
+            Wire.write(b2);
+            
+            error = Wire.endTransmission();
+
+            #ifdef DEBUG_OUTPUT
+            if (!error) {
+                Serial.print("Wrote ");
+                Serial.print(b1, BIN);
+                Serial.print(b2, BIN);
+                Serial.print(" to address ");
+                Serial.println(addr, HEX);
+            } else Serial.println("An error occured when trying to write data");
+            #endif 
+
+            return error;
+        }
     public:
-        
+
+        // Values of Register 0x10 which determine the state
+        enum device_mode : uint16_t {
+            STANDBY = 0x0000, // Ultralow power mode, no data collection, all register values are retained
+            PROGRAM = 0x0001, // Safe mode for programming registers, no data collection, device is fully powered
+            OPERATION = 0x0002 // Normal operation, LEDs and PDs are sampled, power is cycled by internal FSM
+        };
+
+
+        enum led_select : uint8_t {
+                IR = 0x1,
+                RED = 0x2,
+                GREEN = 0X3
+        };
+
+        /*
+        @brief Initialises the ADPD1080 with input pin numbers, attaches interrupt pins and tests I2C communication
+        @param SDA I2C SDA
+        @param SCL I2C SCL
+        @param GPIO0 Interrupt pin 
+        @param GPIO1 Additional interrupt pin
+        */
         void begin(int SDA, int SCL, int GPIO0, int GPIO1) {
             uint8_t error;
 
@@ -60,11 +132,77 @@ class ADPD1080 {
             Wire.beginTransmission(i2c_saddr);
             error = Wire.endTransmission();
 
-            if (error == 0) Serial.println("ADPD1080 Initialised");
+            this->gpio0 = GPIO0;
+            this->gpio1 = GPIO1;
+
+            pinMode(gpio0, INPUT_PULLDOWN);
+            attachInterrupt(gpio0, int_return, CHANGE);
+            pinMode(gpio1, INPUT_PULLDOWN);
+            attachInterrupt(gpio1, int_return, CHANGE);
+            reset();
+
+            #ifdef DEBUG_OUTPUT
+            if (error == 0) Serial.println("ADPD1080 Initialised without error");
+            else Serial.println("An error occured when trying to initialise ADPD1080");
+            #endif
         };
 
-        void test() {
+        /*
+        @brief Handles the state of ADPD1080 as described in the datasheet
+        @param mode can be either STANDBY, PROGRAM or NORMAL
+        */
+        void setMode(device_mode mode) {
+            write_register(MODE, mode);
+            #ifdef DEBUG_OUTPUT
+            switch (mode) {
+                case STANDBY:
+                    Serial.println("Set ADPD1080 to Standby");
+                    break;
+                case PROGRAM:
+                    Serial.println("Set ADPD1080 to Program");
+                    break;
+                case OPERATION:
+                    Serial.println("Set ADPD1080 to Normal operation");
+                    break;
+            }
+            #endif
+        }
+
+        /*
+        @brief Performs a software reset on the ADPD1080
+        */
+        void reset() {
+            if (write_register(SW_RESET, 0x1)) {
+                #ifdef DEBUG_OUTPUT
+                Serial.println("Error resetting ADPD1080");
+                #endif
+            } else {
+                #ifdef DEBUG_OUTPUT
+                Serial.println("Successfully reset ADPD1080");
+                #endif
+            }
+        }
+
+        /*
+        @brief Configures the 32kHz clock to be the input value, returning 0 if successful
+        @param value Boolean enables/disables the clock
+        */
+        bool clk32k_en(bool value) {
+            uint8_t check[2];
+            write_register(SAMPLE_CLK, (value << 7) & 0b10000000);
+
+            read_register(SAMPLE_CLK, check);
+            if (((check[0] >> 7) & 0b1) == value) {
+                return 0; // Succesfully changed value
+            } else return 1;
+        }
+
+        /*
+        @brief Quickly returns the current mode of the device via register access
+        */
+        uint8_t getMode() {
             uint8_t reg[2];
+            bool error = 1;
 
             while (error) {
                 error = read_register(MODE, reg);
@@ -254,11 +392,30 @@ class ADPD1080 {
                     *out |= reg[i] << (8 * i);
                 }
             } else {
-                Serial.print("Register state: ");
-                Serial.print(reg[1], BIN);
-                Serial.print(" ");
-                Serial.println(reg[0], BIN);
+                Serial.println("Error reading FIFO");
             }
-            return;
-        };
+
+        }
+
+        /*
+        @brief Reads the 16-bit value of each PD Channel 
+        */
+        bool readPPG(uint16_t *pd1, uint16_t *pd2, uint16_t *pd3, uint16_t *pd4) {
+            uint8_t reg[2];
+            
+            setMode(OPERATION);
+            if (read_register(SLOTA_PD1_16BIT, reg)) return true;
+            *pd1 = (reg[1] << 8) | reg[0];
+
+            if (read_register(SLOTA_PD2_16BIT, reg)) return true;
+            *pd2 = (reg[1] << 8) | reg[0];
+
+            if (read_register(SLOTA_PD3_16BIT, reg)) return true;
+            *pd3 = (reg[1] << 8) | reg[0];
+
+            if (read_register(SLOTA_PD4_16BIT, reg)) return true;
+            *pd4 = (reg[1] << 8) | reg[0];
+
+            return false;
+        }
 };
