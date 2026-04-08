@@ -110,6 +110,12 @@ class ADPD1080 {
         };
 
 
+        enum led_select : uint8_t {
+                IR = 0x1,
+                RED = 0x2,
+                GREEN = 0X3
+        };
+
         /*
         @brief Initialises the ADPD1080 with input pin numbers, attaches interrupt pins and tests I2C communication
         @param SDA I2C SDA
@@ -215,20 +221,32 @@ class ADPD1080 {
         // TODO make this dynamic -_-
         /*
         @brief Sets the LED Coarse current to a 16-bit value, hardcoded for now 
+        @param LEDxx corresponds to the LED pin which can be 1, 2 or 3
+        @param led_coarse LEDXX coarse current setting. Coarse current sink target value of LEDXX in standard operation. 0x0: lowest coarse setting … 0xF: highest coarse setting
+        @param led_slew LEDXX driver slew rate control from 0 to 7, the slower the slew rate, the safer the performance in terms of reducing the risk of overvoltage of LED driver
+        @param led_scale LEDXX current scale factor, 0 (40%) or 1 (100%)
         */
-        void setLED() {
+        void setLED(uint8_t LEDxx, uint16_t led_coarse, uint16_t led_slew, uint16_t led_scale) {
             uint16_t data;
+        
+            data = led_coarse | ((led_slew << 4) & 0b1110000) | 4096 | ((led_scale << 13) & 8192);
 
-            data = 0xE & 0xF;
-            data += (0b000 << 4) & 0b1110000;
-            data += (0b00000 << 7) & 0b111110000000;
-            data += (0b1 << 12) & 0b1000000000000;
-            data += (0b1 << 13) & 0b10000000000000;
-            data += (0b00 << 14) & 0b1100000000000000;
+            switch (LEDxx) {
+                case 1:
+                    write_register(ILED1_COARSE, data);
+                    break;
+                case 2:
+                    write_register(ILED2_COARSE, data);
+                    break;
+                case 3:
+                    write_register(ILED3_COARSE, data);
+                    break;
+                default:
+                    break;
+            }
 
-            write_register(ILED2_COARSE, data);
+            
         }
-
 
         // TODO make this function more readable
         /*
@@ -254,13 +272,6 @@ class ADPD1080 {
             PD1-4 -> [11:8] 0x5 
             */
 
-
-            enum led_select {
-                IR = 0x1,
-                RED = 0x2,
-                GREEN = 0X3
-            };
-
             enum pd_select {
                 NC = 0,
                 CH1_3_4_CH2_1_2 = 1,
@@ -271,11 +282,10 @@ class ADPD1080 {
                 CH1_3_4_CH2_5_6 = 6,
                 CH1_5_TO_8 = 7
             };
+            
+            optical_select = GREEN | ((CH_ALL_5_TO_8 << 4) & 0x00F0) | ((CH_ALL_5_TO_8 << 8) & 0x0F00);
 
-            optical_select = RED;
-            optical_select += (0x5 << 4) & 0x00F0;
-            optical_select += (0x5 << 8) & 0x0F00;
-            write_register(PD_LED_SELECT, 0b010101010011);
+            write_register(PD_LED_SELECT, optical_select);
 
             write_register(NUM_AVG, (num_averages << 4) & 0xF0);
 
@@ -324,11 +334,8 @@ class ADPD1080 {
                 Bits[9:8] - SLOTA_V_CATHODE
                 Set these to 0x2 for 250mV Vbias
             */
-
-            rbias_select = 0x20;
-            rbias_select += 0b10000000;
-            rbias_select += (0x2 << 8) & 0b1100000000;
-            rbias_select += (0x2 << 10) & 0b110000000000;
+            rbias_select = 0x20 | 0b10000000 | ((0x2 << 8) & 0b1100000000) | ((0x2 << 10) & 0b110000000000);
+            
             write_register(AFE_PWR_CFG2, rbias_select);
 
              // Enable data access
@@ -360,7 +367,7 @@ class ADPD1080 {
 
             }
         
-            setLED();
+            setLED(GREEN, 0xE, 0, 1);
             setMode(OPERATION);
         }
 
@@ -392,7 +399,8 @@ class ADPD1080 {
         */
         bool readPPG(uint16_t *pd1, uint16_t *pd2, uint16_t *pd3, uint16_t *pd4) {
             uint8_t reg[2];
-
+            
+            setMode(OPERATION);
             if (read_register(SLOTA_PD1_16BIT, reg)) return true;
             *pd1 = (reg[1] << 8) | reg[0];
 

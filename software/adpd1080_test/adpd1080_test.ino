@@ -24,7 +24,6 @@ bool startMeasurement() {
     }
     return 0;
   } else if (AFE.getMode() == AFE.PROGRAM) {
-    AFE.setLED();
     AFE.setMode(AFE.OPERATION);
     #ifdef DEBUG_OUTPUT
     Serial.println("Set LED current");
