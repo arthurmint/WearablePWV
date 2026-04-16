@@ -248,14 +248,59 @@ class ADPD1080 {
 
             
         }
+        /*
+@brief Reads and prints the Device ID register (0xFF) to Serial
+*/
+void printDevID() {
+    uint8_t reg[2];
+    if (!read_register(DEVID, reg)) {
+        Serial.print("Device ID: 0x");
+        Serial.println((uint16_t)(reg[1] << 8) | reg[0], HEX);
+    } else {
+        Serial.println("Failed to read Device ID");
+    }
+}
 
+/*
+@brief Reads back key configuration registers and prints them to Serial for verification
+*/
+void readbackConfig() {
+    uint8_t reg[2];
+    const struct { uint8_t addr; const char* name; } regs[] = {
+        { SLOT_EN,          "SLOT_EN"          },
+        { FSAMPLE,          "FSAMPLE"          },
+        { PD_LED_SELECT,    "PD_LED_SELECT"    },
+        { NUM_AVG,          "NUM_AVG"          },
+        { SLOTA_LED_PULSE,  "SLOTA_LED_PULSE"  },
+        { SLOTA_NUMPULSES,  "SLOTA_NUMPULSES"  },
+        { SLOTA_AFE_WINDOW, "SLOTA_AFE_WINDOW" },
+        { TIA_INDEP_GAIN,   "TIA_INDEP_GAIN"   },
+        { SLOTA_TIA_CFG,    "SLOTA_TIA_CFG"    },
+        { SLOTA_AFE_CFG,    "SLOTA_AFE_CFG"    },
+        { AFE_PWR_CFG2,     "AFE_PWR_CFG2"     },
+        { ILED1_COARSE,     "ILED1_COARSE"     },
+    };
+
+    Serial.println("--- Register Readback ---");
+    for (auto& r : regs) {
+        if (!read_register(r.addr, reg)) {
+            Serial.print(r.name);
+            Serial.print(": 0x");
+            Serial.println((uint16_t)(reg[1] << 8) | reg[0], HEX);
+        } else {
+            Serial.print(r.name);
+            Serial.println(": READ ERROR");
+        }
+    }
+    Serial.println("-------------------------");
+}
         // TODO make this function more readable
         /*
         @brief Handles the initial configuration of the ADPD1080 in either interrupt mode or polling mode. Put this in setup()
         @param interrupt_mode Determines how the FIFO will be read (on interrupt or via polling)
         */
         void configurePPG(bool interrupt_mode) {
-            uint8_t optical_select, rbias_select;
+            uint16_t optical_select;
             uint8_t num_averages = 0b000; // 2^num_averages = number of averages
             uint16_t sample_frequency = 100; // data rate = sample_frequency / num_averages
 
@@ -295,11 +340,10 @@ class ADPD1080 {
             // LED pulse settings (Default values)
   
 
-            write_register(SLOTA_LED_PULSE, 0x0300);
-            write_register(SLOTA_NUMPULSES, 0x0818); 
-
-            // AFE window (integration time)
-            write_register(SLOTA_AFE_WINDOW, 0x0020);
+            // 3µs LED pulse, 4µs AFE width, 25µs LED delay (from Table 18)
+            write_register(SLOTA_LED_PULSE,  0x0319);  // width=3µs, offset=25µs
+            write_register(SLOTA_NUMPULSES,  0x0818);  // 8 pulses, 24µs period — unchanged
+            write_register(SLOTA_AFE_WINDOW, 0x21FE);  // width=4µs, offset≈15.9µs
 
             /* 
                 TIA Feedback resistor
@@ -337,12 +381,13 @@ class ADPD1080 {
                 Bits[9:8] - SLOTA_V_CATHODE
                 Set these to 0x2 for 250mV Vbias
             */
-            rbias_select = 0x20 | 0b10000000 | ((0x2 << 8) & 0b1100000000) | ((0x2 << 10) & 0b110000000000);
-            
+            //rbias_select = 0x20 | 0b10000000 | ((0x2 << 8) & 0b1100000000) | ((0x2 << 10) & 0b110000000000);
+              uint16_t rbias_select = 0x20 | 0b10000000 | ((0x2 << 8) & 0b1100000000) | ((0x2 << 10) & 0b110000000000);
+
             write_register(AFE_PWR_CFG2, rbias_select);
 
              // Enable data access
-            write_register(DATA_ACCESS_CTL, 0x0000);
+            write_register(DATA_ACCESS_CTL, 0x0001);
 
 
             if (interrupt_mode) {
