@@ -299,7 +299,7 @@ void readbackConfig() {
         @brief Handles the initial configuration of the ADPD1080 in either interrupt mode or polling mode. Put this in setup()
         @param interrupt_mode Determines how the FIFO will be read (on interrupt or via polling)
         */
-        void configurePPG(bool interrupt_mode) {
+        void configurePPG(bool interrupt_mode = false) {
             uint16_t optical_select;
             uint8_t num_averages = 0b000; // 2^num_averages = number of averages
             uint16_t sample_frequency = 100; // data rate = sample_frequency / num_averages
@@ -369,10 +369,10 @@ void readbackConfig() {
                 0xB065: TIA ADC mode (if Register 0x42, Bit 7 = 0).
                 Others: reserved.
             */
-            write_register(SLOTA_AFE_CFG, 0xAE65);
+            write_register(SLOTA_AFE_CFG, 0xADA5);
 
             // Write 1 to bit 7 to enable the integrator as a buffer.
-            write_register(MATH, 0b10000000);
+            write_register(MATH, 0b00000000);
 
             /*
                 To apply a reverse bias to the photodiode:
