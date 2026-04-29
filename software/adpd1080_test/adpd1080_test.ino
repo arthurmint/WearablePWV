@@ -51,14 +51,14 @@ void loop() {
   uint16_t pd1, pd2, pd3, pd4;
 
   uint16_t available_data = (AFE.getStatus() >> 8) & 0xFF;
-  Serial.print("Available data: ");
-  Serial.print(available_data);
+  //Serial.print("Available data: ");
+  //Serial.print(available_data);
 
   if (available_data >= 4) {
     AFE.readFIFO(&data, 4);
-    Serial.print(" DATA: ");
-    Serial.print(data);
-
+    
+    Serial.println(data);
+    /*
     if (!AFE.readPPG(&pd1, &pd2, &pd3, &pd4)) {
       Serial.print(" PD1: "); Serial.print(pd1);
       Serial.print(" PD2: "); Serial.print(pd2);
@@ -66,11 +66,11 @@ void loop() {
       Serial.print(" PD4: "); Serial.println(pd4);
     } else {
       Serial.println("Read error");
-    }
+    }*/
   } else {
-    Serial.println(" - Not enough data");
+    //Serial.println(" - Not enough data");
   }
 
-  delay(10);
+  delay(100);
 }
 

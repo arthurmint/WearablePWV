@@ -302,12 +302,12 @@ void readbackConfig() {
         void configurePPG(bool interrupt_mode) {
             uint16_t optical_select;
             uint8_t num_averages = 0b000; // 2^num_averages = number of averages
-            uint16_t sample_frequency = 100; // data rate = sample_frequency / num_averages
+            uint16_t sample_frequency = 10; // data rate = sample_frequency / num_averages
 
             setMode(PROGRAM);
 
             // Set SLOTA_EN at bit 0, SLOTA_FIFO_MODE = 1 at bits [4:2]
-            write_register(SLOT_EN, 0b101);
+            write_register(SLOT_EN, 0b1001);
 
             // Sample frequency = 32e+3 / (FSAMPLE_VALUE * 4)
             write_register(FSAMPLE, 32e+3 / (sample_frequency * 4));
@@ -338,13 +338,14 @@ void readbackConfig() {
             write_register(NUM_AVG, (num_averages << 4) & 0xF0);
 
             // LED pulse settings (Default values)
-  
+            
+            //uint8_t led_pulse_width, led_pulse_peiord, led_num_pulses, led_offset_time
 
             // 3µs LED pulse, 4µs AFE width, 25µs LED delay (from Table 18)
             write_register(SLOTA_LED_PULSE,  0x0319);  // width=3µs, offset=25µs
-            write_register(SLOTA_NUMPULSES,  0x0818);  // 8 pulses, 24µs period — unchanged
+            write_register(SLOTA_NUMPULSES,  0x0518);  // 8 pulses, 24µs period — unchanged
             write_register(SLOTA_AFE_WINDOW, 0x21FE);  // width=4µs, offset≈15.9µs
-
+ 
             /* 
                 TIA Feedback resistor
                 0: 200kΩ
@@ -352,7 +353,7 @@ void readbackConfig() {
                 2: 50kΩ
                 3: 25kΩ
             */
-            write_register(TIA_INDEP_GAIN, 0x0000);
+            write_register(TIA_INDEP_GAIN, 0x0002);
 
 
             /*
@@ -415,7 +416,7 @@ void readbackConfig() {
 
             }
         
-            setLED(GREEN, 0xE, 0, 1);
+            setLED(GREEN, 0x4, 0, 1);
             setMode(OPERATION);
         }
 
