@@ -7,155 +7,120 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 
 # --- Configuration ---
-allowed_devices = ['USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C', 'USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C LOCATION=1-1.1']
+allowed_devices = ['USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C', 'USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C LOCATION=1-1.1', 'USB VID:PID=303A:1001 SER=58:8C:81:A8:1E:C0 LOCATION=0-1']
 baudrate = 9600
 max_elements = 50 
+threshold = 1.1e9 # Adjust based on your sensor range
 
-def findPort():
+def findPorts():
     ports = serial.tools.list_ports.comports()
+    found = []
     print("Searching for ESP32 Family Devices...")
     for port, desc, hwid in sorted(ports):
-        print("{}: {} [{}]".format(port, desc, hwid))
+        print(f"Device found at: {hwid}")
         if hwid in allowed_devices:
-            print("ESP32-C3 Found at {}".format(port))
-            return port
-    print("No device found")
-    return None
-
-def get_replay_data(filename):
-    """Loads CSV data into a list for replaying."""
-    replay_buffer = []
-    if not os.path.exists(filename):
-        print(f"Error: File {filename} not found.")
-        return None
-    
-    with open(filename, 'r') as f:
-        for line in f:
-            try:
-                t_str, v_str = line.strip().split(',')
-                replay_buffer.append((float(t_str), float(v_str)))
-            except ValueError:
-                continue
-    return replay_buffer
+            print(f"Found Allowed Device: {hwid}")
+            found.append(port)
+    return found
 
 if __name__ == '__main__':
-    mode = input("Select Mode: [1] Live Stream  [2] Replay File: ").strip()
-    
-    ser = None
-    file = None
-    replay_data = None
-    replay_index = 0
+    active_ports = findPorts()
+    if not active_ports:
+        print("No devices found. Exiting.")
+        exit()
+
+    serials = {}
+    data_store = {}
     ts0 = time.time()
-    found_port = "None"
 
-    if mode == '1':
-        found_port = findPort()
-        if not found_port:
-            exit()
-        ser = serial.Serial(found_port, baudrate, timeout=1)
-        filename = input("Enter filename to save data: ") + ".csv"
-        file = open(filename, 'w')
-        print(f"Streaming live... Saving to {filename}")
-    else:
-        filename = input("Enter filename to replay (without .csv): ") + ".csv"
-        replay_data = get_replay_data(filename)
-        if not replay_data:
-            exit()
-        print(f"Replaying data from {filename}...")
-
-    # Shared Data buffers
-    times = []
-    values = []
-    running = True
-
-    last_known_val = 0
-    last_peak_time = 0
-    seconds_between_beats = 0
-    current_bpm = 50
+    # Setup for each found device
+    for port in active_ports:
+        serials[port] = serial.Serial(port, baudrate, timeout=0.1)
+        data_store[port] = {
+            'times': [],
+            'values': [],
+            'peak_t': [],
+            'peak_v': [],
+            'last_val': 0
+        }
 
     # --- Plot Setup ---
-    fig, ax = plt.subplots()
-    line_plot, = ax.plot([], [], 'r-', label="Raw Signal")
-    # 1. Initialize the average line (blue dashed)
-    avg_plot, = ax.plot([], [], 'b--', label="Baseline Average") 
-    
-    ax.set_title("PPG Data Plotter on {}".format(found_port) if mode == '1' else f"Replay: {filename}")
-    ax.set_xlabel("Time (s)")
-    ax.set_ylabel("Value")
-    ax.legend(loc="upper right")
+    num_devs = len(active_ports)
+    fig, axes = plt.subplots(num_devs, 1, sharex=True, squeeze=False)
+    plot_objects = {}
+
+    for i, port in enumerate(active_ports):
+        ax = axes[i, 0]
+        ln, = ax.plot([], [], 'r-', label=f"Signal ({port})")
+        av, = ax.plot([], [], 'b--', alpha=0.5, label="Baseline")
+        pk, = ax.plot([], [], 'go', markersize=8, label="Peak")
+        
+        ax.set_title(f"Device: {port}")
+        ax.legend(loc="upper right")
+        
+        plot_objects[port] = {'line': ln, 'avg': av, 'peaks': pk, 'ax': ax}
+
+    running = True
 
     def update(frame):
-        global running, replay_index, last_known_val, last_peak_time, seconds_between_beats, current_bpm
-        if not running:
-            return line_plot, avg_plot
+        global running
+        artists = []
 
-        try:
-            ts, val = None, None
-            
-            if mode == '1':
-                if ser.is_open and ser.in_waiting > 0:
-                    raw_line = ser.readline().decode('utf-8', errors='ignore').strip()
+        for port in active_ports:
+            ser = serials[port]
+            ds = data_store[port]
+            objs = plot_objects[port]
+
+            try:
+                if ser.in_waiting > 0:
+                    raw = ser.readline().decode('utf-8', errors='ignore').strip()
                     ts = time.time() - ts0
-                    try:
-                        val = float(raw_line)
-                        last_known_val = val
-                        file.write(f"{ts},{val},{seconds_between_beats},{current_bpm}\n")
-                        file.flush()
-                    except ValueError:
-                        return line_plot, avg_plot
-            else:
-                if replay_index < len(replay_data):
-                    ts, val = replay_data[replay_index]
-                    replay_index += 1
-                    time.sleep(0.01) 
-                else:
-                    running = False
-                    print("Replay finished.")
-                    return line_plot, avg_plot
+                    val = float(raw)
 
-            if ts is not None and val is not None:
-                times.append(ts)
-                values.append(val)
+                    ds['times'].append(ts)
+                    ds['values'].append(val)
 
-                if len(times) > max_elements:
-                    times.pop(0)
-                    values.pop(0)
+                    # Peak Detection (Rising Edge)
+                    if ds['last_val'] < threshold and val >= threshold:
+                        ds['peak_t'].append(ts)
+                        ds['peak_v'].append(val)
+                    
+                    ds['last_val'] = val
 
-                # 2. Calculate the average array based on current buffer size
-                current_avg = np.mean(values)
-                avg_data = [current_avg] * len(times)
-                
-                # 3. Update both line objects
-                line_plot.set_data(times, values)
-                avg_plot.set_data(times, avg_data)
-                
-                # Dynamic axis scaling
+                    # Maintain Buffer
+                    if len(ds['times']) > max_elements:
+                        ds['times'].pop(0)
+                        ds['values'].pop(0)
+                    
+                    while ds['peak_t'] and ds['peak_t'][0] < ds['times'][0]:
+                        ds['peak_t'].pop(0)
+                        ds['peak_v'].pop(0)
 
-                ax.set_ylim(1.5e+9, 2.5e+9)
+                    # Update Artist Data
+                    objs['line'].set_data(ds['times'], ds['values'])
+                    objs['avg'].set_data(ds['times'], [np.mean(ds['values'])] * len(ds['times']))
+                    objs['peaks'].set_data(ds['peak_t'], ds['peak_v'])
 
-                #ax.relim()
-                #ax.autoscale_view()
-                if times:
-                    ax.set_xlim(times[0], times[-1])
+                    # Scaling
+                    
+                    objs['ax'].set_ylim(1.5e+9, 2.5e+9)
 
-        except Exception as e:
-            print(f"Error: {e}")
-            running = False
+                    if ds['times']:
+                        objs['ax'].set_xlim(ds['times'][0], ds['times'][-1])
+
+            except Exception as e:
+                pass # Handle malformed serial strings
             
-        return line_plot, avg_plot
+            artists.extend([objs['line'], objs['avg'], objs['peaks']])
+
+        return artists
 
     ani = FuncAnimation(fig, update, interval=10, blit=False, cache_frame_data=False)
-
+    
     try:
+        plt.tight_layout()
         plt.show()
-    except KeyboardInterrupt:
-        print("\nShutdown signaled...")
     finally:
-        running = False
-        if ani.event_source:
-            ani.event_source.stop()
-        if file and not file.closed:
-            file.close()
-        if ser and ser.is_open:
+        for ser in serials.values():
             ser.close()
-        print("Cleanup complete.")
+        print("Ports closed.")
