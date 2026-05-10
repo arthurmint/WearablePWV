@@ -6,122 +6,170 @@
 #include <esp_now.h>
 #include <esp_wifi.h>
 
-// -----------------------------
-// State for received messages
-// -----------------------------
+// ─────────────────────────────────────────
+// Shared data struct (used by both devices)
+// ─────────────────────────────────────────
+struct PPGPacket {
+  uint16_t pd1;
+  uint16_t pd2;
+  uint16_t pd3;
+  uint16_t pd4;
+  uint32_t timestamp_ms;  // millis() on the sender for latency tracking
+};
 
-// Last message received from the other ESP32 via ESP-NOW
+// ─────────────────────────────────────────
+// Receiver state
+// ─────────────────────────────────────────
+static PPGPacket  g_lastPPGPacket        = {0};
+static bool       g_hasNewEspNowMessage  = false;
+static uint8_t    g_lastSenderMac[6]     = {0};
+
+// Keep the original String-based accessor for web_server compatibility
 static String g_lastEspNowMessage;
 
-// Flag to indicate that a new message has arrived
-static bool g_hasNewEspNowMessage = false;
 
-// Optional: store last sender MAC for debugging
-static uint8_t g_lastSenderMac[6] = {0};
-
-
-// ------------------------------------
-// ESP-NOW receive callback (NEW API)
-// ------------------------------------
-// New signature: const esp_now_recv_info *info, const uint8_t *incomingData, int len
+// ─────────────────────────────────────────
+// Receive callback
+// ─────────────────────────────────────────
 inline void onEspNowDataRecv(const esp_now_recv_info *info,
                              const uint8_t *incomingData,
                              int len) {
-  // Get sender MAC from info struct
-  const uint8_t *mac = info->src_addr;
-  memcpy(g_lastSenderMac, mac, 6);
+  memcpy(g_lastSenderMac, info->src_addr, 6);
 
-  // Copy incoming bytes into a String (assume sender sends text)
-  String msg;
-  msg.reserve(len + 1);
-  for (int i = 0; i < len; i++) {
-    msg += static_cast<char>(incomingData[i]);
+  if (len == sizeof(PPGPacket)) {
+    memcpy(&g_lastPPGPacket, incomingData, sizeof(PPGPacket));
+    g_hasNewEspNowMessage = true;
+
+    // Also populate the legacy String for the web viewer
+    char buf[64];
+    snprintf(buf, sizeof(buf), "PD1:%u PD2:%u PD3:%u PD4:%u",
+             g_lastPPGPacket.pd1, g_lastPPGPacket.pd2,
+             g_lastPPGPacket.pd3, g_lastPPGPacket.pd4);
+    g_lastEspNowMessage = String(buf);
+
+    char macStr[18];
+    snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
+             info->src_addr[0], info->src_addr[1], info->src_addr[2],
+             info->src_addr[3], info->src_addr[4], info->src_addr[5]);
+
+    Serial.println("╔════════════════════════════════════════╗");
+    Serial.print  ("║ PPG PACKET from "); Serial.println(macStr);
+    Serial.printf ("║  PD1=%-5u  PD2=%-5u  PD3=%-5u  PD4=%-5u\n",
+                   g_lastPPGPacket.pd1, g_lastPPGPacket.pd2,
+                   g_lastPPGPacket.pd3, g_lastPPGPacket.pd4);
+    Serial.printf ("║  Sender timestamp: %lu ms\n", g_lastPPGPacket.timestamp_ms);
+    Serial.println("╚════════════════════════════════════════╝");
+  } else {
+    Serial.printf("ESP-NOW: unexpected payload size %d (expected %d)\n",
+                  len, sizeof(PPGPacket));
   }
-
-  g_lastEspNowMessage = msg;
-  g_hasNewEspNowMessage = true;
-
-  // Debug output on serial
-  char macStr[18];
-  snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
-           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  
-  Serial.println("╔════════════════════════════════════════╗");
-  Serial.print("║ ESP-NOW MESSAGE RECEIVED from ");
-  Serial.print(macStr);
-  Serial.println(" ║");
-  Serial.print("║ Content: ");
-  Serial.print(msg);
-  Serial.println(" ║");
-  Serial.println("╚════════════════════════════════════════╝");
 }
 
 
-// ------------------------------------
-// Initialisation of ESP-NOW (gateway)
-// ------------------------------------
+// ─────────────────────────────────────────
+// Receiver init (gateway / display device)
+// ─────────────────────────────────────────
 inline bool initEspNowReceiver() {
-  // WiFi.mode() and AP are already configured in the web_server code.
-  // Verify we're in the right mode
   wifi_mode_t mode;
   esp_wifi_get_mode(&mode);
-  
   Serial.print("WiFi mode: ");
-  if (mode == WIFI_MODE_AP) Serial.println("AP only");
-  else if (mode == WIFI_MODE_STA) Serial.println("STA only");
-  else if (mode == WIFI_MODE_APSTA) Serial.println("AP+STA (correct for ESP-NOW + web server)");
-  else Serial.println("Unknown");
+  if      (mode == WIFI_MODE_AP)    Serial.println("AP only");
+  else if (mode == WIFI_MODE_STA)   Serial.println("STA only");
+  else if (mode == WIFI_MODE_APSTA) Serial.println("AP+STA");
+  else                              Serial.println("Unknown");
 
-  // Get and display current channel
-  uint8_t currentChannel;
-  wifi_second_chan_t secondChan;
-  esp_wifi_get_channel(&currentChannel, &secondChan);
-  Serial.print("Current WiFi channel: ");
-  Serial.println(currentChannel);
+  uint8_t ch; wifi_second_chan_t sc;
+  esp_wifi_get_channel(&ch, &sc);
+  Serial.printf("Current WiFi channel: %u\n", ch);
 
-  // Initialize ESP-NOW
-  esp_err_t initResult = esp_now_init();
-  if (initResult != ESP_OK) {
-    Serial.print("Error initializing ESP-NOW, error code: ");
-    Serial.println(initResult);
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("ESP-NOW init failed");
+    return false;
+  }
+  if (esp_now_register_recv_cb(onEspNowDataRecv) != ESP_OK) {
+    Serial.println("ESP-NOW callback registration failed");
     return false;
   }
 
-  // Register the receive callback using the new function signature
-  esp_err_t cbResult = esp_now_register_recv_cb(onEspNowDataRecv);
-  if (cbResult != ESP_OK) {
-    Serial.print("Error registering ESP-NOW callback, error code: ");
-    Serial.println(cbResult);
-    return false;
-  }
-
-  Serial.println("✓ ESP-NOW initialized successfully as receiver");
-  Serial.println("✓ Listening for messages on channel " + String(currentChannel));
-  
+  Serial.println("✓ ESP-NOW receiver ready on channel " + String(ch));
   return true;
 }
 
 
-// -------------------------------------------------
-// Interface functions for other modules / main loop
-// -------------------------------------------------
+// ─────────────────────────────────────────
+// Sender init (sensor device)
+// Call this INSTEAD of initEspNowReceiver()
+// peerMac = MAC address of the receiver ESP32
+// ─────────────────────────────────────────
+static esp_now_peer_info_t g_peerInfo = {};
 
-// Check if a new ESP-NOW message has arrived since last read
-inline bool espNowHasNewMessage() {
-  return g_hasNewEspNowMessage;
-}
+inline bool initEspNowSender(const uint8_t peerMac[6], uint8_t channel = 1) {
+  // Sensor device uses plain STA mode (no AP needed)
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(100);
 
-// Get the last ESP-NOW message.
-// If clearFlag is true, the "new message" flag is cleared.
-inline String espNowGetLastMessage(bool clearFlag = true) {
-  String msg = g_lastEspNowMessage;
-  if (clearFlag) {
-    g_hasNewEspNowMessage = false;
+  // Lock onto the same channel as the receiver
+  esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("ESP-NOW sender init failed");
+    return false;
   }
-  return msg;
+
+  memcpy(g_peerInfo.peer_addr, peerMac, 6);
+  g_peerInfo.channel = channel;
+  g_peerInfo.encrypt = false;
+
+  if (esp_now_add_peer(&g_peerInfo) != ESP_OK) {
+    Serial.println("Failed to add ESP-NOW peer");
+    return false;
+  }
+
+  char macStr[18];
+  snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
+           peerMac[0], peerMac[1], peerMac[2],
+           peerMac[3], peerMac[4], peerMac[5]);
+  Serial.printf("✓ ESP-NOW sender ready → peer %s (ch %u)\n", macStr, channel);
+  return true;
 }
 
-// Optional: get last sender MAC as a String (for display/logging)
+
+// ─────────────────────────────────────────
+// Send a PPG reading
+// ─────────────────────────────────────────
+inline bool espNowSendPPG(uint16_t pd1, uint16_t pd2,
+                           uint16_t pd3, uint16_t pd4) {
+  PPGPacket pkt;
+  pkt.pd1          = pd1;
+  pkt.pd2          = pd2;
+  pkt.pd3          = pd3;
+  pkt.pd4          = pd4;
+  pkt.timestamp_ms = millis();
+
+  esp_err_t result = esp_now_send(g_peerInfo.peer_addr,
+                                  (const uint8_t*)&pkt,
+                                  sizeof(PPGPacket));
+  if (result != ESP_OK) {
+    Serial.printf("ESP-NOW send failed: %d\n", result);
+    return false;
+  }
+  return true;
+}
+
+
+// ─────────────────────────────────────────
+// Receiver accessors (unchanged)
+// ─────────────────────────────────────────
+inline bool    espNowHasNewMessage()               { return g_hasNewEspNowMessage; }
+inline PPGPacket espNowGetLastPacket(bool clear = true) {
+  if (clear) g_hasNewEspNowMessage = false;
+  return g_lastPPGPacket;
+}
+inline String  espNowGetLastMessage(bool clearFlag = true) {
+  if (clearFlag) g_hasNewEspNowMessage = false;
+  return g_lastEspNowMessage;
+}
 inline String espNowGetLastSenderMac() {
   char macStr[18];
   snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
