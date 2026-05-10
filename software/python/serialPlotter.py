@@ -68,6 +68,11 @@ if __name__ == '__main__':
     values = []
     running = True
 
+    last_known_val = 0
+    last_peak_time = 0
+    seconds_between_beats = 0
+    current_bpm = 50
+
     # Set up the plot
     fig, ax = plt.subplots()
     line_plot, = ax.plot([], [], 'r-')
@@ -76,12 +81,13 @@ if __name__ == '__main__':
     ax.set_ylabel("Value")
 
     def update(frame):
-        global running, replay_index
+        global running, replay_index, last_known_val, last_peak_time, seconds_between_beats, current_bpm
         if not running:
             return line_plot,
 
         try:
-            ts, val = None, None
+            ts, val, drawval = None, None, None
+            
 
             if mode == '1':
                 # Logic for Live Serial
@@ -90,7 +96,25 @@ if __name__ == '__main__':
                     ts = time.time() - ts0
                     try:
                         val = float(raw_line)
-                        file.write(f"{ts},{val}\n")
+                        drawval=val
+                        """
+                        if (val>110000):
+                            val=110000
+
+                        if (val<102000):
+                            val = 0
+
+                        if(last_known_val == 0 and val > 0):
+                            seconds_between_beats = ts - last_peak_time
+                            current_bpm = 60 / seconds_between_beats
+                            print(current_bpm)
+
+                            last_peak_time = ts
+                            
+                        last_known_val = val
+                       
+                            """
+                        file.write(f"{ts},{val},{seconds_between_beats},{current_bpm}\n")
                         file.flush()
                     except ValueError:
                         return line_plot,
@@ -115,8 +139,15 @@ if __name__ == '__main__':
                     values.pop(0)
 
                 line_plot.set_data(times, values)
+                ax.set_ylim(1.5e+9, 2.5e+9)
+                
+
+
                 ax.relim()
                 ax.autoscale_view()
+
+                if times:
+                    ax.set_xlim(times[0], times[-1])
 
         except Exception as e:
             print(f"Error: {e}")
