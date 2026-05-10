@@ -4,9 +4,10 @@ import time
 import os
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import numpy as np
 
 # --- Configuration ---
-allowed_devices = ['USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C']
+allowed_devices = ['USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C', 'USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C LOCATION=1-1.1']
 baudrate = 9600
 max_elements = 50 
 
@@ -45,9 +46,9 @@ if __name__ == '__main__':
     replay_data = None
     replay_index = 0
     ts0 = time.time()
+    found_port = "None"
 
     if mode == '1':
-        # --- Live Mode Setup ---
         found_port = findPort()
         if not found_port:
             exit()
@@ -56,7 +57,6 @@ if __name__ == '__main__':
         file = open(filename, 'w')
         print(f"Streaming live... Saving to {filename}")
     else:
-        # --- Replay Mode Setup ---
         filename = input("Enter filename to replay (without .csv): ") + ".csv"
         replay_data = get_replay_data(filename)
         if not replay_data:
@@ -73,62 +73,45 @@ if __name__ == '__main__':
     seconds_between_beats = 0
     current_bpm = 50
 
-    # Set up the plot
+    # --- Plot Setup ---
     fig, ax = plt.subplots()
-    line_plot, = ax.plot([], [], 'r-')
+    line_plot, = ax.plot([], [], 'r-', label="Raw Signal")
+    # 1. Initialize the average line (blue dashed)
+    avg_plot, = ax.plot([], [], 'b--', label="Baseline Average") 
+    
     ax.set_title("PPG Data Plotter on {}".format(found_port) if mode == '1' else f"Replay: {filename}")
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("Value")
+    ax.legend(loc="upper right")
 
     def update(frame):
         global running, replay_index, last_known_val, last_peak_time, seconds_between_beats, current_bpm
         if not running:
-            return line_plot,
+            return line_plot, avg_plot
 
         try:
-            ts, val, drawval = None, None, None
+            ts, val = None, None
             
-
             if mode == '1':
-                # Logic for Live Serial
                 if ser.is_open and ser.in_waiting > 0:
                     raw_line = ser.readline().decode('utf-8', errors='ignore').strip()
                     ts = time.time() - ts0
                     try:
                         val = float(raw_line)
-                        drawval=val
-                        """
-                        if (val>110000):
-                            val=110000
-
-                        if (val<102000):
-                            val = 0
-
-                        if(last_known_val == 0 and val > 0):
-                            seconds_between_beats = ts - last_peak_time
-                            current_bpm = 60 / seconds_between_beats
-                            print(current_bpm)
-
-                            last_peak_time = ts
-                            
                         last_known_val = val
-                       
-                            """
                         file.write(f"{ts},{val},{seconds_between_beats},{current_bpm}\n")
                         file.flush()
                     except ValueError:
-                        return line_plot,
+                        return line_plot, avg_plot
             else:
-                # Logic for Replay
                 if replay_index < len(replay_data):
                     ts, val = replay_data[replay_index]
                     replay_index += 1
-                    # Small sleep to simulate time passing if the file is large
                     time.sleep(0.01) 
                 else:
                     running = False
                     print("Replay finished.")
-                    return line_plot,
+                    return line_plot, avg_plot
 
             if ts is not None and val is not None:
                 times.append(ts)
@@ -138,14 +121,20 @@ if __name__ == '__main__':
                     times.pop(0)
                     values.pop(0)
 
-                line_plot.set_data(times, values)
-                ax.set_ylim(1.5e+9, 2.5e+9)
+                # 2. Calculate the average array based on current buffer size
+                current_avg = np.mean(values)
+                avg_data = [current_avg] * len(times)
                 
+                # 3. Update both line objects
+                line_plot.set_data(times, values)
+                avg_plot.set_data(times, avg_data)
+                
+                # Dynamic axis scaling
 
+                ax.set_ylim(1.5e+9, 2.5e+9)
 
-                ax.relim()
-                ax.autoscale_view()
-
+                #ax.relim()
+                #ax.autoscale_view()
                 if times:
                     ax.set_xlim(times[0], times[-1])
 
@@ -153,7 +142,7 @@ if __name__ == '__main__':
             print(f"Error: {e}")
             running = False
             
-        return line_plot,
+        return line_plot, avg_plot
 
     ani = FuncAnimation(fig, update, interval=10, blit=False, cache_frame_data=False)
 
