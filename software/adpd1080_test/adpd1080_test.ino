@@ -5,7 +5,7 @@
 #include "../include/adpd1080.h"
 
 ADPD1080 AFE;
-
+uint32_t data;
 /* Project specific functions -- define measurement procedure */
 
 bool startMeasurement() {
@@ -47,8 +47,7 @@ void setup() {
 }
 
 void loop() {
-  uint32_t data;
-  uint16_t pd1, pd2, pd3, pd4;
+  //uint16_t pd1, pd2, pd3, pd4;
 
   uint16_t available_data = (AFE.getStatus() >> 8) & 0xFF;
   //Serial.print("Available data: ");
@@ -56,7 +55,7 @@ void loop() {
 
   if (available_data >= 4) {
     AFE.readFIFO(&data, 4);
-    
+
     Serial.println(data);
     /*
     if (!AFE.readPPG(&pd1, &pd2, &pd3, &pd4)) {
@@ -67,6 +66,8 @@ void loop() {
     } else {
       Serial.println("Read error");
     }*/
+
+    
   } else {
     //Serial.println(" - Not enough data");
   }

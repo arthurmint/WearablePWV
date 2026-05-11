@@ -331,7 +331,7 @@ void readbackConfig() {
                 CH1_5_TO_8 = 7
             };
             
-            optical_select = GREEN | ((CH_ALL_1_TO_4 << 4) & 0x00F0) | ((CH_ALL_1_TO_4 << 8) & 0x0F00);
+            optical_select = IR | ((CH_ALL_1_TO_4 << 4) & 0x00F0) | ((CH_ALL_1_TO_4 << 8) & 0x0F00);
 
             write_register(PD_LED_SELECT, optical_select);
 
@@ -416,7 +416,7 @@ void readbackConfig() {
 
             }
         
-            setLED(GREEN, 0x4, 0, 1);
+            setLED(IR, 0x0, 0, 0);
             setMode(OPERATION);
         }
 
