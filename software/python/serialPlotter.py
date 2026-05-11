@@ -7,7 +7,7 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 
 # --- Configuration ---
-allowed_devices = ['USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C', 'USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C LOCATION=1-1.1', 'USB VID:PID=303A:1001 SER=58:8C:81:A8:1E:C0 LOCATION=0-1']
+allowed_devices = ['USB VID:PID=303A:1001 SER=58:8C:81:A8:40:7C', 'USB VID:PID=303A:1001 SER=58:8C:81:A8:1E:C0', 'USB VID:PID=303A:1001 SER=58:8C:81:A8:1E:C0 LOCATION=0-1']
 baudrate = 9600
 max_elements = 50 
 threshold = 1.1e9 # Adjust based on your sensor range
@@ -17,8 +17,8 @@ def findPorts():
     found = []
     print("Searching for ESP32 Family Devices...")
     for port, desc, hwid in sorted(ports):
-        print(f"Device found at: {hwid}")
-        if hwid in allowed_devices:
+        print(f"Device found at: {desc}")
+        if desc == "USB JTAG/serial debug unit":
             print(f"Found Allowed Device: {hwid}")
             found.append(port)
     return found
@@ -51,13 +51,17 @@ if __name__ == '__main__':
 
     for i, port in enumerate(active_ports):
         ax = axes[i, 0]
+
         ln, = ax.plot([], [], 'r-', label=f"Signal ({port})")
         av, = ax.plot([], [], 'b--', alpha=0.5, label="Baseline")
         pk, = ax.plot([], [], 'go', markersize=8, label="Peak")
         
-        ax.set_title(f"Device: {port}")
+        if port == "/dev/cu.usbmodem101":
+            ax.set_title(f"Device: Module B on {port}")
+        elif port == "/dev/cu.usbmodem1101":
+            ax.set_title(f"Device: Module A on {port}")
         ax.legend(loc="upper right")
-        
+       
         plot_objects[port] = {'line': ln, 'avg': av, 'peaks': pk, 'ax': ax}
 
     running = True
@@ -103,7 +107,7 @@ if __name__ == '__main__':
 
                     # Scaling
                     
-                    objs['ax'].set_ylim(1.5e+9, 2.5e+9)
+                    objs['ax'].set_ylim(-2.5e+9, 2.5e+9)
 
                     if ds['times']:
                         objs['ax'].set_xlim(ds['times'][0], ds['times'][-1])
